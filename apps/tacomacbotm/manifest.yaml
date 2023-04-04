@@ -2,7 +2,7 @@
 id: taco-mac-botm
 name: Taco Mac BOTM
 summary: Taco Mac Beer of the Month
-desc: Show the current Taco Mac Beers of the Month.
+desc: Show the current Taco Mac Beers of the Month.  GA franchises only, as TM Corp does not publish a page specific to TN and SC franchises.
 author: jvivona
 fileName: taco_mac_botm.star
 packageName: tacomacbotm
