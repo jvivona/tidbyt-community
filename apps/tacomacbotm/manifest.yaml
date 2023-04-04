@@ -1,0 +1,8 @@
+---
+id: taco-mac-botm
+name: Taco Mac BOTM
+summary: Taco Mac Beer of the Month
+desc: Show the current Taco Mac Beers of the Month.
+author: jvivona
+fileName: taco_mac_botm.star
+packageName: tacomacbotm
