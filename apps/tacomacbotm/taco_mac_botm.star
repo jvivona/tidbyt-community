@@ -9,6 +9,7 @@ VERSION = 23094
 
 load("cache.star", "cache")
 load("encoding/json.star", "json")
+load("encoding/base64.star", "base64")
 load("http.star", "http")
 load("render.star", "render")
 load("schema.star", "schema")
@@ -25,15 +26,14 @@ DEFAULTS = {
     "positions": 16,
 }
 
+
 DEFAULT_WHO = "world"
 
 def main(config):
 
-    image = get_cachable_data("https://tacomac.com/wp-content/uploads/2023/04/April-GA-Beers1.png")
-
     return render.Root(
         child = render.Row(expanded = True, children = [
-            render.Box(width = 24, height = 26, child = render.Image(src = image, height = 24, width = 24)),
+            render.Box(width = 64, height = 8, child = render.WrappedText(content = "Taco Mac BOTM", color="#ff0000")),
             #fade_child(data["name"], data["track"], "{}\n{}\nTV: {}".format(date_str, time_str, data["tv"].upper()), text_color),
         ])
     )
