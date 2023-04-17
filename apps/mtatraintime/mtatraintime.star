@@ -282,11 +282,26 @@ LINE_COLORS = {
 }
 
 API_ENDPOINT = "https://backend-unified.mylirr.org"
+
 DEFAULT_STATION_ID = "1CW"
 DEFAULT_END_STATION_ID = "0NY"
+DEFAULT_LOCATION = """ 
+{ 
+    "lat": "40.6781784", 
+    "lng": "-73.9441579", 
+    "description": "Brooklyn, NY, USA", 
+    "locality": "Brooklyn", 
+    "place_id": "ChIJCSF8lBZEwokRhngABHRcdoI", 
+    "timezone": "America/New_York" 
+} 
+"""
+
 CACHE_TIMEOUT = 60  # will display inaccurate on-time performance if not 60 seconds.
 
 def main(config):
+    config_location = config.get("location", DEFAULT_LOCATION)
+    location = json.decode(config_location)
+    timezone = location["timezone"]
     station_id = config.str("station_id", DEFAULT_STATION_ID)
     end_station_id = config.str("end_station_id", DEFAULT_END_STATION_ID)
     cached_station = cache.get("%s" % station_id + "_arrivals")
@@ -311,9 +326,17 @@ def main(config):
     count = 0
     display = []
 
+    #print(arrivals)
+
     for arrival in arrivals["arrivals"]:
+        #print(arrival["stops"])
         if count < 4:
-            if (station_id in arrival["stops"] and end_station_id in arrival["stops"]) and arrival["stops"].index(station_id) < arrival["stops"].index(end_station_id):
+            if (STATIONS[station_id]["railroad"] == "LIRR"):
+                # Long Island Rail Road uses a different format for their arrivals.
+                if (end_station_id in arrival["stops"] and station_id not in arrival["stops"]):
+                    display.append(arrival)
+                    count += 1
+            elif (station_id in arrival["stops"] and end_station_id in arrival["stops"]) and arrival["stops"].index(station_id) < arrival["stops"].index(end_station_id):
                 display.append(arrival)
                 count += 1
 
@@ -333,20 +356,18 @@ def main(config):
             color = LINE_COLORS[STATIONS[station_id]["branch"]],
         ),
     ]
-    print(count)
+    print("Trains: %d" % count)
     if count > 0:
         for arrival in display:
             late = False
             late_seconds = 0
 
-            #print(arrival)
             if "otp" in arrival["status"] and arrival["status"]["otp"] < -60:
                 late = True
                 late_seconds = abs(arrival["status"]["otp"])
-
-            children.append(render.Text("%s" % time.from_timestamp(int(arrival["time"])).format("3:04pm") + " " + ((str(int(time.parse_duration(str(late_seconds) + "s").minutes)) + "m Late") if late else "On Time"), color = ("#dc143c" if late else "#ccc"), font = "tom-thumb"))
-            #children.append(render.Text("%s" % time.from_timestamp(int(arrival["time"])).format("3:04pm") + " " + arrival["train_num"], color = ("#dc143c" if late else "#ccc"), font = "tom-thumb"))
-
+            children.append(render.Text("%s" %
+                                        time.from_timestamp(int(arrival["time"])).in_location(timezone).format("3:04pm") + " " +
+                                        ((str(int(time.parse_duration(str(late_seconds) + "s").minutes)) + "m Late") if late else "On Time"), color = ("#dc143c" if late else "#ccc"), font = "tom-thumb"))
     else:
         children.append(render.Text("No trains", color = "#ccc", font = "6x13"))
         children.append(render.Text(" found.", color = "#ccc", font = "6x13"))
